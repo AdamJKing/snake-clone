@@ -1,0 +1,12 @@
+[package]
+name = "fizzbuss"
+version = "0.1.0"
+authors = ["king6 <a.j.king@elsevier.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.7.3"
+tui = "0.9.5"
+termion = "1.5.5"
