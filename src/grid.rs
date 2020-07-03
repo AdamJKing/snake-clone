@@ -1,14 +1,7 @@
 use rand::Rng;
 use std::cmp::*;
 use std::collections::vec_deque::*;
-use tui::widgets::canvas::Painter;
-use tui::widgets::canvas::Shape;
-use tui::{
-    buffer::Buffer as TuiBuffer,
-    layout::Rect,
-    style::Color,
-    widgets::{canvas::Canvas, Block, Borders, Widget},
-};
+use tui::{buffer::Buffer as TuiBuffer, layout::Rect, widgets::Widget};
 
 #[derive(PartialEq, PartialOrd)]
 pub struct Point {
@@ -53,49 +46,21 @@ impl Grid {
     }
 }
 
-struct Square {
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
-    color: Color,
-}
-
-impl Shape for Square {
-    fn draw(&self, painter: &mut Painter) {
-        let upper_left = painter.get_point(self.x, self.y);
-        let bottom_right = painter.get_point(self.x + self.width, self.y + self.height);
-
-        if let (Some((x1, y1)), Some((x2, y2))) = (upper_left, bottom_right) {
-            for y in y1..y2 {
-                for x in x1..x2 {
-                    painter.paint(x, y, self.color)
-                }
-            }
+fn draw_chunk_at(buff: &mut TuiBuffer, x: u16, y: u16, chunk_width: u16, chunk_height: u16) {
+    for i in x..(x + chunk_width) {
+        for j in y..(y + chunk_height) {
+            buff.get_mut(i, j).set_symbol(tui::symbols::block::FULL);
         }
     }
 }
 
 impl Widget for &Grid {
     fn render(self, area: Rect, buff: &mut TuiBuffer) {
-        let canvas = Canvas::default()
-            .block(Block::default().title("Snake").borders(Borders::ALL))
-            .x_bounds([0.0, self.width as f64])
-            .y_bounds([0.0, self.height as f64])
-            .paint(|ctx| {
-                for &Point { x, y } in self.snake.0.iter() {
-                    let block = Square {
-                        x: x as f64,
-                        y: y as f64,
-                        width: 1.0,
-                        height: 1.0,
-                        color: Color::White,
-                    };
+        let chunk_width = area.width / self.width;
+        let chunk_height = area.height / self.height;
 
-                    ctx.draw(&block)
-                }
-            });
-
-        canvas.render(area, buff)
+        for &Point { x, y } in &self.snake.0 {
+            draw_chunk_at(buff, x, y, chunk_width, chunk_height);
+        }
     }
 }
