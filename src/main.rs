@@ -36,11 +36,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut input = io::stdin().keys();
 
-    let grid = Grid::new(width, height);
-
     loop {
         terminal.draw(|mut f| {
-            f.render_widget(&grid, f.size());
+            let grid = Grid::new(width, height);
+            f.render_widget(grid, f.size());
         })?;
 
         if let Some(input) = input.next() {

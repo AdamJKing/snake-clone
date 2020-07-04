@@ -54,7 +54,7 @@ fn draw_chunk_at(buff: &mut TuiBuffer, x: u16, y: u16, chunk_width: u16, chunk_h
     }
 }
 
-impl Widget for &Grid {
+impl Widget for Grid {
     fn render(self, area: Rect, buff: &mut TuiBuffer) {
         let chunk_width = area.width / self.width;
         let chunk_height = area.height / self.height;
