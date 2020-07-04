@@ -1,34 +1,12 @@
+use crate::geo::Point;
+use crate::snake::Snake;
 use rand::Rng;
-use std::cmp::*;
-use std::collections::vec_deque::*;
 use tui::{buffer::Buffer as TuiBuffer, layout::Rect, widgets::Widget};
-
-#[derive(PartialEq, PartialOrd)]
-pub struct Point {
-    pub x: u16,
-    pub y: u16,
-}
-
-impl Point {
-    fn at(x: u16, y: u16) -> Point {
-        Point { x, y }
-    }
-}
 
 pub struct Grid {
     width: u16,
     height: u16,
     snake: Snake,
-}
-
-pub struct Snake(VecDeque<Point>);
-
-impl Snake {
-    fn new(starting_point: Point) -> Snake {
-        let mut points = VecDeque::new();
-        points.push_front(starting_point);
-        Snake(points)
-    }
 }
 
 impl Grid {
@@ -59,7 +37,7 @@ impl Widget for Grid {
         let chunk_width = area.width / self.width;
         let chunk_height = area.height / self.height;
 
-        for &Point { x, y } in &self.snake.0 {
+        for Point { x, y } in self.snake {
             draw_chunk_at(buff, x, y, chunk_width, chunk_height);
         }
     }

@@ -1,4 +1,6 @@
+mod geo;
 mod grid;
+mod snake;
 
 use crate::grid::Grid;
 use std::env;
