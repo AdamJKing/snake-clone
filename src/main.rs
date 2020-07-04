@@ -3,7 +3,12 @@ mod grid;
 use crate::grid::Grid;
 use std::env;
 use std::{error::Error, io};
-use termion::{input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
+use termion::{
+    event::Key,
+    input::{MouseTerminal, TermRead},
+    raw::IntoRawMode,
+    screen::AlternateScreen,
+};
 use tui::{backend::TermionBackend, Terminal};
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -29,12 +34,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
+    let mut input = io::stdin().keys();
+
     let grid = Grid::new(width, height);
 
-    for _ in 0..100 {
+    loop {
         terminal.draw(|mut f| {
             f.render_widget(&grid, f.size());
         })?;
+
+        if let Some(input) = input.next() {
+            if let Key::Char('q') = input? {
+                break;
+            }
+        }
     }
 
     Ok(())
