@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .expect("Width must be a number");
 
     let height = args
-        .get(1)
+        .get(2)
         .expect("Height is missing")
         .parse::<u16>()
         .expect("Height must be a number");
