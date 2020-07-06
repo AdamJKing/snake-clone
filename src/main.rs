@@ -3,8 +3,10 @@ mod grid;
 mod snake;
 
 use crate::grid::Grid;
+use crate::snake::*;
 use std::env;
 use std::{error::Error, io};
+use std::{thread, time};
 use termion::{
     event::Key,
     input::{MouseTerminal, TermRead},
@@ -42,10 +44,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
-    let mut input = io::stdin().keys();
-    let grid = Grid::new(width, height);
+    let mut input = termion::async_stdin().keys();
+    let mut grid = Grid::new(width, height);
+
+    let tick_length = time::Duration::from_millis(60);
 
     loop {
+        let start = time::Instant::now();
+
         terminal.draw(|mut f| {
             let canvas = Canvas::default()
                 .block(Block::default().title("Snake").borders(Borders::ALL))
@@ -55,7 +61,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .paint(|ctx| {
                     let coords: &Vec<(f64, f64)> = &grid
                         .snake
-                        .points
                         .iter()
                         .map(|&(x, y)| (x as f64, y as f64))
                         .collect();
@@ -72,9 +77,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         })?;
 
         if let Some(input) = input.next() {
-            if let Key::Char('q') = input? {
-                break;
+            match input? {
+                Key::Char('q') => break,
+                Key::Left => grid.snake.movement(Movement::Left),
+                Key::Up => grid.snake.movement(Movement::Up),
+                Key::Right => grid.snake.movement(Movement::Right),
+                Key::Down => grid.snake.movement(Movement::Down),
+                _ => {}
             }
+        }
+
+        grid.advance();
+
+        if start.elapsed() < tick_length {
+            thread::sleep(tick_length - start.elapsed())
         }
     }
 

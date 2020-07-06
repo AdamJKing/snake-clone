@@ -1,7 +1,5 @@
-
 use crate::snake::Snake;
 use rand::Rng;
-
 
 pub struct Grid {
     pub width: u16,
@@ -21,5 +19,9 @@ impl Grid {
             height,
             snake,
         }
+    }
+
+    pub fn advance(&mut self) {
+        self.snake.update();
     }
 }
