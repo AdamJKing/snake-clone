@@ -1,25 +1,20 @@
+mod game;
 mod geo;
-mod grid;
 mod snake;
+mod ui;
 
-use crate::grid::Grid;
-use crate::snake::*;
+use crate::ui::GameWidget;
+use game::Game;
 use std::env;
 use std::{error::Error, io};
 use std::{thread, time};
 use termion::{
-    event::Key,
     input::{MouseTerminal, TermRead},
     raw::IntoRawMode,
     screen::AlternateScreen,
 };
-use tui::style::Color;
-use tui::{
-    backend::TermionBackend,
-    symbols::Marker,
-    widgets::{canvas::*, Block, Borders},
-    Terminal,
-};
+
+use tui::{backend::TermionBackend, Terminal};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
@@ -45,7 +40,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.hide_cursor()?;
 
     let mut input = termion::async_stdin().keys();
-    let mut grid = Grid::new(width, height);
+    let mut game = Game::new(width, height);
 
     let tick_length = time::Duration::from_millis(60);
 
@@ -53,41 +48,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         let start = time::Instant::now();
 
         terminal.draw(|mut f| {
-            let canvas = Canvas::default()
-                .block(Block::default().title("Snake").borders(Borders::ALL))
-                .x_bounds([0.0, grid.width as f64])
-                .y_bounds([0.0, grid.height as f64])
-                .marker(Marker::Dot)
-                .paint(|ctx| {
-                    let coords: &Vec<(f64, f64)> = &grid
-                        .snake
-                        .iter()
-                        .map(|&(x, y)| (x as f64, y as f64))
-                        .collect();
-
-                    let points = Points {
-                        coords,
-                        color: Color::White,
-                    };
-
-                    ctx.draw(&points);
-                });
-
-            f.render_widget(canvas, f.size());
+            let game_widget = GameWidget { game: &game };
+            f.render_widget(game_widget, f.size());
         })?;
 
-        if let Some(input) = input.next() {
-            match input? {
-                Key::Char('q') => break,
-                Key::Left => grid.snake.movement(Movement::Left),
-                Key::Up => grid.snake.movement(Movement::Up),
-                Key::Right => grid.snake.movement(Movement::Right),
-                Key::Down => grid.snake.movement(Movement::Down),
-                _ => {}
-            }
-        }
+        let handled_input = ui::handle_user_input(&game, &mut input)?;
 
-        grid.advance();
+        match handled_input {
+            Some(update) => game = update.advance(),
+            None => break,
+        }
 
         if start.elapsed() < tick_length {
             thread::sleep(tick_length - start.elapsed())
