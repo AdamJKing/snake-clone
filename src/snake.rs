@@ -19,7 +19,7 @@ impl<'a> Iterator for Iter<'a> {
     }
 }
 
-pub fn move_snake(grid: Grid, snake: &Snake) -> Option<Snake> {
+pub fn move_snake(grid: &Grid, snake: &Snake) -> Option<Snake> {
     let mut points = snake.points.clone();
     let &(x, y) = snake.head();
 
@@ -90,6 +90,12 @@ impl Snake {
     pub fn head(&self) -> &Point {
         &self.points[0]
     }
+
+    pub fn increase_length(&self) -> Snake {
+        let mut points = self.points.clone();
+        points.push_front(*self.head());
+        Snake { points, ..*self }
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -128,42 +134,40 @@ mod tests {
         let grid = Grid { size: 10 };
 
         let snake = Snake::new((0, 0)).movement(Movement::Left);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert!(moved_snake.is_none());
 
         let snake = Snake::new((0, 0)).movement(Movement::Down);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert!(moved_snake.is_none());
 
         let snake = Snake::new((10, 10)).movement(Movement::Right);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert!(moved_snake.is_none());
 
         let snake = Snake::new((10, 10)).movement(Movement::Up);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert!(moved_snake.is_none());
     }
 
     #[test]
     fn moving_inside_the_grid() {
-        let grid = Grid {
-            size: 10,
-        };
+        let grid = Grid { size: 10 };
 
         let snake = Snake::new((5, 5)).movement(Movement::Left);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert_eq!(moved_snake.expect("snake is in grid").head(), &(4, 5));
 
         let snake = Snake::new((5, 5)).movement(Movement::Down);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert_eq!(moved_snake.expect("snake is in grid").head(), &(5, 4));
 
         let snake = Snake::new((5, 5)).movement(Movement::Right);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert_eq!(moved_snake.expect("snake is in grid").head(), &(6, 5));
 
         let snake = Snake::new((5, 5)).movement(Movement::Up);
-        let moved_snake = move_snake(grid, &snake);
+        let moved_snake = move_snake(&grid, &snake);
         assert_eq!(moved_snake.expect("snake is in grid").head(), &(5, 6));
     }
 }

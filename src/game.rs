@@ -1,4 +1,5 @@
 use crate::geo;
+use crate::geo::Grid;
 use crate::snake::*;
 use rand::Rng;
 
@@ -23,23 +24,31 @@ impl Game {
         let y = rng.gen_range(0, grid_size);
         let snake = Snake::new((x, y));
 
-        let x = rng.gen_range(0, grid_size);
-        let y = rng.gen_range(0, grid_size);
-        let food = Food((x, y));
+        let grid = geo::Grid { size: grid_size };
 
-        Game::Live(GameData {
-            grid: geo::Grid { size: grid_size },
-            snake,
-            food,
-        })
+        let food = Food::new(&grid);
+
+        Game::Live(GameData { grid, snake, food })
     }
 
     pub fn advance(&self) -> Game {
         match self {
             Game::Ended => Game::Ended,
             Game::Live(data) => {
-                if let Some(snake) = move_snake(data.grid, &data.snake) {
-                    Game::Live(GameData { snake, ..*data })
+                if let Some(snake) = move_snake(&data.grid, &data.snake) {
+                    if snake.head() == &data.food.0 {
+                        Game::Live(GameData {
+                            snake: snake.increase_length(),
+                            food: Food::new(&data.grid),
+                            grid: data.grid,
+                        })
+                    } else {
+                        Game::Live(GameData {
+                            snake,
+                            food: data.food,
+                            grid: data.grid,
+                        })
+                    }
                 } else {
                     Game::Ended
                 }
@@ -50,6 +59,17 @@ impl Game {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Food(pub geo::Point);
+
+impl Food {
+    pub fn new(grid: &Grid) -> Food {
+        let mut rng = rand::thread_rng();
+
+        let x = rng.gen_range(0, grid.size);
+        let y = rng.gen_range(0, grid.size);
+
+        Food((x, y))
+    }
+}
 
 #[cfg(tests)]
 mod tests {
