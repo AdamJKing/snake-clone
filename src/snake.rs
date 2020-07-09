@@ -36,38 +36,67 @@ pub fn move_snake(grid: &Grid, snake: &Snake) -> Option<Snake> {
     }
 
     match &snake.movement {
-        Movement::Still => (),
+        Movement::Still => Some(snake.clone()),
         Movement::Up => {
-            points.push_front((x, y + 1));
-            points.pop_back();
+            let next_move = (x, y + 1);
+
+            if snake.points.contains(&next_move) {
+                None
+            } else {
+                points.push_front(next_move);
+                points.pop_back();
+                Some(Snake { points, ..*snake })
+            }
         }
 
         Movement::Right => {
-            points.push_front((x + 1, y));
-            points.pop_back();
+            let next_move = (x + 1, y);
+
+            if snake.points.contains(&next_move) {
+                None
+            } else {
+                points.push_front(next_move);
+                points.pop_back();
+                Some(Snake { points, ..*snake })
+            }
         }
 
         Movement::Down => {
-            points.push_front((x, y - 1));
-            points.pop_back();
+            let next_move = (x, y - 1);
+
+            if snake.points.contains(&next_move) {
+                None
+            } else {
+                points.push_front(next_move);
+                points.pop_back();
+                Some(Snake { points, ..*snake })
+            }
         }
 
         Movement::Left => {
-            points.push_front((x - 1, y));
-            points.pop_back();
+            let next_move = (x - 1, y);
+
+            if snake.points.contains(&next_move) {
+                None
+            } else {
+                points.push_front(next_move);
+                points.pop_back();
+                Some(Snake { points, ..*snake })
+            }
         }
     }
-
-    Some(Snake {
-        points,
-        movement: snake.movement,
-    })
 }
 
 impl Snake {
     pub fn new(starting_point: Point) -> Snake {
         let mut points = VecDeque::new();
+
         points.push_front(starting_point);
+        points.push_front(starting_point);
+        points.push_front(starting_point);
+        points.push_front(starting_point);
+        points.push_front(starting_point);
+
         Snake {
             points,
             movement: Movement::Still,
