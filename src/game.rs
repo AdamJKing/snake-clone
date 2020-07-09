@@ -15,13 +15,16 @@ pub enum Game {
 }
 
 impl Game {
-    pub fn new(width: u16, height: u16) -> Game {
+    pub fn new(grid_size: u16) -> Game {
         let mut rng = rand::thread_rng();
-        let x = rng.gen_range(0, width);
-        let y = rng.gen_range(0, height);
+        let x = rng.gen_range(0, grid_size);
+        let y = rng.gen_range(0, grid_size);
 
         Game::Live(GameData {
-            grid: geo::Grid { width, height },
+            grid: geo::Grid {
+                width: grid_size,
+                height: grid_size,
+            },
             snake: Snake::new((x, y)),
         })
     }

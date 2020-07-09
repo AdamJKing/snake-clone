@@ -19,17 +19,11 @@ use tui::{backend::TermionBackend, Terminal};
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
 
-    let width = args
+    let grid_size = args
         .get(1)
-        .expect("Width is missing")
+        .expect("Grid size is missing")
         .parse::<u16>()
-        .expect("Width must be a number");
-
-    let height = args
-        .get(2)
-        .expect("Height is missing")
-        .parse::<u16>()
-        .expect("Height must be a number");
+        .expect("Grid size must be a number");
 
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
@@ -40,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.hide_cursor()?;
 
     let mut input = termion::async_stdin().keys();
-    let mut game = Game::new(width, height);
+    let mut game = Game::new(grid_size);
 
     let tick_length = time::Duration::from_millis(60);
 
