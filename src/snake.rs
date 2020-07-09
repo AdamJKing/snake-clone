@@ -125,10 +125,7 @@ mod tests {
 
     #[test]
     fn moving_snake_outside_of_grid() {
-        let grid = Grid {
-            width: 10,
-            height: 10,
-        };
+        let grid = Grid { size: 10 };
 
         let snake = Snake::new((0, 0)).movement(Movement::Left);
         let moved_snake = move_snake(grid, &snake);
@@ -150,8 +147,7 @@ mod tests {
     #[test]
     fn moving_inside_the_grid() {
         let grid = Grid {
-            width: 10,
-            height: 10,
+            size: 10,
         };
 
         let snake = Snake::new((5, 5)).movement(Movement::Left);

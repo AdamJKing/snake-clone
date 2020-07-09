@@ -6,6 +6,7 @@ use rand::Rng;
 pub struct GameData {
     pub grid: geo::Grid,
     pub snake: Snake,
+    pub food: Food,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -17,15 +18,19 @@ pub enum Game {
 impl Game {
     pub fn new(grid_size: u16) -> Game {
         let mut rng = rand::thread_rng();
+
         let x = rng.gen_range(0, grid_size);
         let y = rng.gen_range(0, grid_size);
+        let snake = Snake::new((x, y));
+
+        let x = rng.gen_range(0, grid_size);
+        let y = rng.gen_range(0, grid_size);
+        let food = Food((x, y));
 
         Game::Live(GameData {
-            grid: geo::Grid {
-                width: grid_size,
-                height: grid_size,
-            },
-            snake: Snake::new((x, y)),
+            grid: geo::Grid { size: grid_size },
+            snake,
+            food,
         })
     }
 
@@ -42,6 +47,9 @@ impl Game {
         }
     }
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct Food(pub geo::Point);
 
 #[cfg(tests)]
 mod tests {

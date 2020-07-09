@@ -1,3 +1,4 @@
+use crate::game::Food;
 use crate::game::Game;
 use crate::game::GameData;
 use crate::snake::{Movement, Snake};
@@ -5,21 +6,18 @@ use termion::event::Key;
 use tui::buffer::Buffer;
 use tui::layout::Rect;
 use tui::style::Color;
-use tui::style::Style;
 use tui::symbols::Marker;
 use tui::widgets::canvas::Canvas;
 use tui::widgets::canvas::Context;
 use tui::widgets::canvas::Points;
 use tui::widgets::Block;
 use tui::widgets::Borders;
-use tui::widgets::Paragraph;
-use tui::widgets::Text;
 use tui::widgets::Widget;
 
 const QUIT_KEY: Key = Key::Char('q');
 
 pub struct GameWidget<'a> {
-    pub game: &'a Game,
+    canvas: Canvas<'a, Box<dyn Fn(&mut Context) + 'a>>,
 }
 
 fn paint_snake(ctx: &mut Context, snake: &Snake) {
@@ -33,34 +31,51 @@ fn paint_snake(ctx: &mut Context, snake: &Snake) {
     ctx.draw(&points);
 }
 
-fn render_live_game<'a>(
-    width: u16,
-    height: u16,
-    snake: &'a Snake,
-) -> Canvas<'a, impl Fn(&mut Context) + 'a> {
-    Canvas::default()
-        .block(Block::default().title("Snake").borders(Borders::ALL))
-        .x_bounds([0.0, width as f64])
-        .y_bounds([0.0, height as f64])
-        .marker(Marker::Dot)
-        .paint(move |ctx| paint_snake(ctx, snake))
+fn paint_food(ctx: &mut Context, food: &Food) {
+    let (x, y) = food.0;
+    ctx.print(x as f64, y as f64, "O", Color::Red);
+}
+
+impl<'a> GameWidget<'a> {
+    pub fn new(game: &'a Game) -> GameWidget<'a> {
+        let block = Block::default().title("Snake").borders(Borders::ALL);
+        GameWidget {
+            canvas: match game {
+                Game::Ended => {
+                    let paint_func = Box::new(|ctx: &mut Context| {
+                        ctx.print(5.0, 5.0, "Game Over", Color::White);
+                    });
+
+                    Canvas::default()
+                        .block(block)
+                        .x_bounds([0.0, 10.0])
+                        .y_bounds([0.0, 10.0])
+                        .paint(paint_func)
+                }
+
+                Game::Live(GameData {
+                    grid, snake, food, ..
+                }) => {
+                    let paint_func = Box::new(move |ctx: &mut Context| {
+                        paint_snake(ctx, &snake);
+                        paint_food(ctx, &food);
+                    });
+
+                    Canvas::default()
+                        .block(block)
+                        .x_bounds([0.0, grid.size as f64])
+                        .y_bounds([0.0, grid.size as f64])
+                        .marker(Marker::Dot)
+                        .paint(paint_func)
+                }
+            },
+        }
+    }
 }
 
 impl Widget for GameWidget<'_> {
     fn render(self, area: Rect, buff: &mut Buffer) {
-        match self.game {
-            Game::Ended => {
-                let game_over_msg = &Text::raw("Game Over");
-                Paragraph::new(std::iter::once(game_over_msg))
-                    .style(Style::default().fg(Color::White).bg(Color::Black))
-                    .render(area, buff);
-            }
-
-            Game::Live(GameData { grid, snake }) => {
-                let canvas = render_live_game(grid.width, grid.height, snake);
-                canvas.render(area, buff);
-            }
-        }
+        self.canvas.render(area, buff);
     }
 }
 
@@ -115,15 +130,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::game::*;
     use crate::geo::Grid;
 
     fn example_game() -> Game {
         Game::Live(GameData {
-            grid: Grid {
-                width: 100,
-                height: 100,
-            },
+            grid: Grid { size: 100 },
             snake: Snake::new((10, 10)),
+            food: Food((15, 15)),
         })
     }
 

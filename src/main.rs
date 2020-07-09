@@ -36,13 +36,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut input = termion::async_stdin().keys();
     let mut game = Game::new(grid_size);
 
-    let tick_length = time::Duration::from_millis(60);
+    let tick_length = time::Duration::from_millis(75);
 
     loop {
         let start = time::Instant::now();
 
         terminal.draw(|mut f| {
-            let game_widget = GameWidget { game: &game };
+            let game_widget = GameWidget::new(&game);
             f.render_widget(game_widget, f.size());
         })?;
 
