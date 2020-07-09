@@ -76,7 +76,13 @@ fn to_movement(key: Key) -> Option<Movement> {
 
 fn update_snake(key: Key, snake: &Snake) -> Snake {
     match to_movement(key) {
-        Some(mvmnt) => snake.movement(mvmnt),
+        Some(mvmnt) => {
+            if snake.movement.can_move_from(&mvmnt) {
+                snake.movement(mvmnt)
+            } else {
+                snake.clone()
+            }
+        }
         None => snake.clone(),
     }
 }

@@ -5,7 +5,7 @@ use std::collections::vec_deque::VecDeque;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Snake {
     points: VecDeque<Point>,
-    movement: Movement,
+    pub movement: Movement,
 }
 
 pub struct Iter<'a> {
@@ -99,6 +99,18 @@ pub enum Movement {
     Right,
     Down,
     Left,
+}
+
+impl Movement {
+    pub fn can_move_from(&self, movement: &Movement) -> bool {
+        match self {
+            Movement::Still => true,
+            Movement::Left => movement != &Movement::Right,
+            Movement::Up => movement != &Movement::Down,
+            Movement::Right => movement != &Movement::Left,
+            Movement::Down => movement != &Movement::Up,
+        }
+    }
 }
 
 #[cfg(test)]
